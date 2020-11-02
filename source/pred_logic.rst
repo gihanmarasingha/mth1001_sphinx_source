@@ -543,8 +543,31 @@ Here is a forward Lean proof of the same result.
 Exists elimination
 ------------------
 
-Suppose you want to prove, 'A person in Britain has competed in the Olympics' and you know,
-'there exists a person in Britain who has won a gold medal at the Olympics'
+Suppose you want to prove, 'A person in Britain has competed in the Olympics' and you have a
+hypothesis :math:`h`, 'there exists a person in Britain who has won a gold medal at the Olympics'.
+
+By :math:`h`, we can take :math:`u`, a person in Britain for which we have hypothesis :math:`k`,
+':math:`u` has one a gold medal at the Olmpics'. To prove the original goal, it suffices to
+prove the goal with the assumption of :math:`u` and :math:`k`. This observation is the essence
+of exists elimination, the rule of inference used to eliminate the existential quantifier.
+
+.. proof:mathsrule:: Exists elimination, backward
+
+  Let :math:`P` be a predicate on a type :math:`U`. Given :math:`h : \exists x, P(x)`, to prove
+  :math:`C`, it suffices to derive :math:`C` under the assumptions :math:`u : U` and
+  :math:`k : P(u)`.
+
+This rule should be reminscent of disjunction eliminiation.
+
+.. proof:example::
+
+  Let :math:`P` and :math:`Q` be predicates on a type :math:`U`. then
+
+  .. math::
+
+    \exists x, P(x) \land Q(x) \to \exists y, P(y).
+
+
 
 
 
