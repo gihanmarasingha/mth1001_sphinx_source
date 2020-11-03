@@ -118,7 +118,9 @@ html_theme_options = {
    # 'head_font_family': 'Times New Roman, Times, serif',
    # 'code_bg': 'white',
 
-    'extra_nav_links': {'PDF version':'mth1001_in_lean.pdf', 'Lean Home':'https://leanprover.github.io/'},
+    'extra_nav_links': {'Index': 'genindex.html',
+                        'PDF version':'mth1001_in_lean.pdf',
+                        'Lean Home':'https://leanprover.github.io/'},
    # 'sidebar_width' : '230px',
    # 'page_width' : '1080px',
     # 'fixed_sidebar' : True
