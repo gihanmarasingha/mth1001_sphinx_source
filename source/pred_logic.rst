@@ -623,25 +623,6 @@ is a proof term for ``C``.
   end
   -- END
 
-Even and odd numbers
-====================
-
-As a practical example, we consider the definition of even numbers.
-
-.. proof:definition::
-
-  Let :math:`a` be an integer. :math:`a` is even means :math:`\exists (b : \mathbb Z), a = 2b`.
-
-Note that for a given term :math:`a`, :math:`\exists b, a = 2b` is a proposition.
-Thus :math:`\mathrm{even}` is a predicate. To harmonise this definition with the language of
-predicate logic, we may write :math:`\mathrm{even}\ a` to denote the proposition
-:math:`\exists b, a = 2b`.
-
-For example, :math:`\mathrm{even}\ 10` is the proposition :math:`\exists b, 10 = 2b`. Just as
-:math:`\mathrm{even}\ 5` is the proposition :math:`\exists b, 5 = 2b`.
-
-
-
 .. index:: quantifiers; negating, negating 
 
 Negating quantifiers
@@ -728,9 +709,205 @@ Complete the following proof of the above theorem.
   -- END
   end hidden
 
+Even and odd numbers
+====================
 
+Even numbers
+------------
 
+As a practical example, we consider the definition of even numbers.
 
+.. proof:definition::
+
+  Let :math:`a` be an natural number. :math:`a` is even means :math:`\exists (b : \mathbb N), a = 2b`.
+
+Note that for a given term :math:`a`, :math:`\exists b, a = 2b` is a proposition.
+Thus :math:`\mathrm{even}` is a predicate. To harmonise this definition with the language of
+predicate logic, we may write :math:`\mathrm{even}\ a` to denote the proposition
+:math:`\exists b, a = 2b`.
+
+For example, :math:`\mathrm{even}\ 10` is the proposition :math:`\exists b, 10 = 2b`. Just as
+:math:`\mathrm{even}\ 7` is the proposition :math:`\exists b, 7 = 2b`.
+
+Suppose we already know :math:`h : 10 = 2\times5`. We can use this fact to prove
+:math:`\mathrm{even}\ 10`.
+
+.. proof:example::
+
+  Given :math:`h : 10 = 2\times5`, we have :math:`\mathrm{even}\ 10`.
+
+The proof is merely an application of exists introduction to :math:`5 : \mathbb N` and :math:`h`.
+
+Let's see this in Lean. The first line below is the definition of ``even``. The expression
+``exists.intro 5 h`` is a proof term for ``even 10``. This is a forward proof.
+
+.. code-block:: lean
+
+  def even (a : ℕ) := ∃ b, a = 2 * b
+
+  example (h : 10 = 2 * 5) : even 10 :=
+  begin
+    exact exists.intro 5 h
+  end
+
+Alternatively, we can give a backward proof. This proof employs the ``use`` tactic.
+
+.. code-block:: lean
+
+  import tactic
+  namespace hidden
+  def even (a : ℕ) := ∃ b, a = 2 * b
+  -- BEGIN
+  example (h : 10 = 2 * 5) : even 10 :=
+  begin
+    use 5,   -- By exists introduction on `5`, it suffices to prove `10 = 2 * 5`.
+    exact h  -- This follows by reiteration on `h`.
+  end
+  -- END
+  end hidden
+
+The proof of the next example involves both exists introduction and exists elimination.
+We make use of some properties of natural numbers that we have not yet proved.
+
+.. proof:example::
+
+  Let :math:`n : \mathbb N`. Given :math:`h : \mathrm{even}\ n`, we have
+  :math:`\mathrm{even}\ 5n`.
+
+.. proof:proof::
+
+  Using the definition of even, we have :math:`h : \exists b, n = 2b`.
+  The goal is to prove :math:`\exists b, 5n = 2b` (note this is not necessarily the same :math:`b`
+  that appears in :math:`h`).
+  
+  By exists elimination on :math:`h`, it suffices prove this goal under the assumptions
+  :math:`c : \mathbb N` and :math:`k : n = 2c`.
+
+  By exists introduction on :math:`5c`, it suffices to prove :math:`5n=2(5c)` (essentially, this is
+  taking :math:`b` in the goal to be :math:`5c`).
+
+  Rewriting using :math:`k`, the goal is to prove :math:`5(2c)=2(5c)`. This follows by standard
+  properties of the natural numbers.
+
+.. code-block:: lean
+
+  import tactic
+  namespace hidden
+  def even (a : ℕ) := ∃ b, a = 2 * b
+  -- BEGIN
+  example (n : ℕ) (h : even n) : even (5*n) :=
+  begin
+    unfold even at h, -- Using the definition of even, `h : ∃ b, n = 2 * b`
+    unfold even, -- Using the definition of even, the goal is `∃ b, 5n = 2b`
+    cases h with c k, -- By exists elimination on `h`, it suffices to prove the goal assuming `c : ℕ` and `k : n = 2c`.
+    use (5*c), -- * By exists introduction on `5*c`, it suffices to prove `5*n = 2*(5*c)`.
+    rw k, -- Rewriting using `k`, the goal is to prove `5 * (2 * c) = 2 * (5 * c)`.
+    ring, -- This holds by standard properties of the natural numbers (note the `ring` tactic simplifies many 'algebraic' expressions).
+  end
+  -- END
+  end hidden
+
+Odd numbers
+-----------
+
+.. proof:definition::
+
+  Let :math:`a : \mathbb N` be an integer. Then :math:`\mathrm{odd}\ a` means
+  :math:`\exists (b : \mathbb N), a = 2b + 1`.
+
+.. proof:theorem::
+
+  Given :math:`n : \mathbb N`, we have
+  :math:`\neg\mathrm{even}\ n \leftrightarrow\mathrm{odd}\ n`.
+
+The above theorem is suprisingly difficult to prove! You don't need to understand the proof, but 
+I give it below if you're interested (click 'try it!' to see the proofs of all the required lemmas).
+
+.. code-block:: lean
+
+  import tactic
+  namespace hidden
+  def even (a : ℕ) := ∃ b, a = 2 * b
+
+  def odd (a : ℕ) := ∃ b, a = 2 * b + 1
+
+  def parity : ℕ → ℕ
+  | 0              := 0
+  | (nat.succ n)   := ite (parity n = 0) 1 0
+
+  lemma parity_eq_zero_or_one (n : ℕ) : parity n = 0 ∨ parity n = 1 :=
+  begin
+    induction n with k hk,
+    { left, refl, },
+    unfold parity at *,
+    by_cases h : parity k = 0,
+    { rw h, right, refl, },
+    { left, exact if_neg h, },
+  end
+
+  lemma parity_eq_zero_of_even (n : ℕ) : even n → parity n = 0 :=
+  begin
+    rintro ⟨b, rfl⟩,
+    induction b with k hk,
+    { refl, },
+    { rw nat.mul_succ,
+      unfold parity,
+      refine if_neg _,
+      rw [hk, if_pos],
+      { contradiction, },
+      { refl, }, },
+  end
+
+  lemma parity_eq_one_of_odd (n : ℕ) : odd n → parity n = 1 :=
+  begin
+    rintro ⟨b, rfl⟩,
+    induction b with k hk,
+    { refl, },
+    { rw nat.mul_succ,
+      unfold parity at *,
+      rw if_pos,
+      rw if_neg,
+      rw hk,
+      trivial, },
+  end
+
+  -- BEGIN
+  theorem not_even_iff_odd (n : ℕ) : ¬even n ↔ odd n :=
+  begin
+    induction n with k hk,
+    { exact ⟨(λ h, false.elim (h ⟨0, rfl⟩)), (λ ⟨n,hn⟩ _, nat.succ_ne_zero (2*n) hn.symm)⟩, },
+    { cases (parity_eq_zero_or_one k) with k₀ k₁, 
+      { have : even k, from (show ¬odd k → even k, by {contrapose!, exact hk.mp})
+        ((mt (parity_eq_one_of_odd k)) (k₀.symm ▸ nat.zero_ne_one)),
+        rcases this with ⟨b, rfl⟩,
+        split,
+        { exact λ _, ⟨b, rfl⟩, },
+        { have h₃ : parity(nat.succ (2*b)) = 1, from if_pos k₀,
+          exact (λ _, (mt (parity_eq_zero_of_even _)) (h₃.symm ▸ nat.zero_ne_one.symm )) }, },
+      { have h₁ : ¬(parity k = 0), { intro h, rw h at k₁, contradiction, },
+        rcases (hk.mp) ((mt (parity_eq_zero_of_even k )) h₁) with ⟨b, rfl⟩,
+        split,
+        { exact λ h₂, false.elim (h₂ ⟨b+1, rfl⟩), },
+        { have h₃ : parity(nat.succ (2*b+1)) = 0, from if_neg h₁,
+          exact (λ h₄, false.elim ((nat.zero_ne_one) (h₃ ▸ (parity_eq_one_of_odd _ h₄)))), }, }, },
+  end
+  -- END
+  end hidden
+
+.. proof:example::
+
+  Given :math:`a, b, c, d : \mathbb N`, given :math:`h_1 : c = 2a`, and :math:`h_2 : d = 2b+1`.
+  We have :math:`\mathrm{odd} (c+d)`.
+
+.. proof:proof::
+
+  By definition of :math:`\mathrm{odd} (c+d)`, we have to prove :math:`\exists x, c + d = 2x+1`.
+  Note that I've changed the variable name from :math:`b` to :math:`x` in applying the definition
+  to avoid a clash with the variable :math:`b`.
+
+  By exists introduction on :math:`a+b`, it suffices to prove :math:`c + d = 2(a+b)+1`.
+  Rewriting using :math:`h_1` and :math:`h_2`, the goal is to prove
+  :math:`2a + (2b+1) = 2(a+b)+1`. This follows by standard arithmetic results.
 
 Mixing quantifiers
 ==================
