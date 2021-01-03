@@ -143,4 +143,4 @@ def setup(app):
     app.add_builder(LeanTestBuilder)
     app.add_builder(LeanExamplesBuilder)
 
-    return {'version': '0.1'}
+    return {'version': '1.0'}
